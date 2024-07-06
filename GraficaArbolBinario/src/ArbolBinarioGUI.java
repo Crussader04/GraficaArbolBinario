@@ -1,5 +1,3 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -10,10 +8,10 @@ public class ArbolBinarioGUI extends JFrame {
     private ArbolBinario arbol;
     private JTextArea areaResultado;
     private PanelArbol panelArbol;
+    private Timer timer;
 
     public ArbolBinarioGUI() {
         arbol = new ArbolBinario();
-        inicializarArbol();
 
         setTitle("Visualización de Recorridos de Árbol");
         setSize(800, 600);
@@ -26,6 +24,8 @@ public class ArbolBinarioGUI extends JFrame {
         JButton botonPreOrden = new JButton("PreOrden");
         JButton botonInOrden = new JButton("InOrden");
         JButton botonPostOrden = new JButton("PostOrden");
+        JButton botonAgregarNodo = new JButton("Agregar Nodo");
+        JButton botonEliminarNodo = new JButton("Eliminar Nodo");
 
         botonPreOrden.addActionListener(new ActionListener() {
             @Override
@@ -33,7 +33,7 @@ public class ArbolBinarioGUI extends JFrame {
                 List<Integer> recorrido = arbol.obtenerPreOrden();
                 mostrarExplicacion("Recorrido PreOrden", "En el recorrido PreOrden, se visita primero el nodo raíz, luego el subárbol izquierdo y finalmente el subárbol derecho.");
                 mostrarRecorrido(recorrido);
-                panelArbol.setRecorrido(recorrido);
+                iniciarAnimacionRecorrido(recorrido);
             }
         });
 
@@ -43,7 +43,7 @@ public class ArbolBinarioGUI extends JFrame {
                 List<Integer> recorrido = arbol.obtenerInOrden();
                 mostrarExplicacion("Recorrido InOrden", "En el recorrido InOrden, se visita primero el subárbol izquierdo, luego el nodo raíz y finalmente el subárbol derecho.");
                 mostrarRecorrido(recorrido);
-                panelArbol.setRecorrido(recorrido);
+                iniciarAnimacionRecorrido(recorrido);
             }
         });
 
@@ -53,7 +53,35 @@ public class ArbolBinarioGUI extends JFrame {
                 List<Integer> recorrido = arbol.obtenerPostOrden();
                 mostrarExplicacion("Recorrido PostOrden", "En el recorrido PostOrden, se visita primero el subárbol izquierdo, luego el subárbol derecho y finalmente el nodo raíz.");
                 mostrarRecorrido(recorrido);
-                panelArbol.setRecorrido(recorrido);
+                iniciarAnimacionRecorrido(recorrido);
+            }
+        });
+
+        botonAgregarNodo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String valorString = JOptionPane.showInputDialog(null, "Ingrese el valor del nuevo nodo:");
+                try {
+                    int valor = Integer.parseInt(valorString);
+                    arbol.insertar(valor);
+                    panelArbol.repaint();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Ingrese un valor válido.");
+                }
+            }
+        });
+
+        botonEliminarNodo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String valorString = JOptionPane.showInputDialog(null, "Ingrese el valor del nodo a eliminar:");
+                try {
+                    int valor = Integer.parseInt(valorString);
+                    arbol.eliminar(valor);
+                    panelArbol.repaint();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Ingrese un valor válido.");
+                }
             }
         });
 
@@ -61,29 +89,20 @@ public class ArbolBinarioGUI extends JFrame {
         panelBotones.add(botonPreOrden);
         panelBotones.add(botonInOrden);
         panelBotones.add(botonPostOrden);
+        panelBotones.add(botonAgregarNodo);
+        panelBotones.add(botonEliminarNodo);
 
-
-        areaResultado = new JTextArea();
+        areaResultado = new JTextArea(5, 30);
         areaResultado.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaResultado);
 
         panelArbol = new PanelArbol(arbol);
 
-        panel.add(panelBotones, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.SOUTH);
         panel.add(panelArbol, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.EAST);
+        panel.add(panelBotones, BorderLayout.SOUTH);
 
         add(panel);
-    }
-
-    private void inicializarArbol() {
-        arbol.raiz = new Nodo(1);
-        arbol.raiz.izquierdo = new Nodo(2);
-        arbol.raiz.derecho = new Nodo(3);
-        arbol.raiz.izquierdo.izquierdo = new Nodo(4);
-        arbol.raiz.izquierdo.derecho = new Nodo(5);
-        arbol.raiz.derecho.izquierdo = new Nodo(6);
-        arbol.raiz.derecho.derecho = new Nodo(7);
     }
 
     private void mostrarRecorrido(List<Integer> recorrido) {
@@ -96,6 +115,23 @@ public class ArbolBinarioGUI extends JFrame {
 
     private void mostrarExplicacion(String titulo, String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void iniciarAnimacionRecorrido(List<Integer> recorrido) {
+        panelArbol.setRecorrido(recorrido);
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panelArbol.avanzarRecorrido();
+                if (panelArbol.indiceRecorrido >= recorrido.size()) {
+                    timer.stop();
+                }
+            }
+        });
+        timer.start();
     }
 
     public static void main(String[] args) {

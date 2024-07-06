@@ -5,14 +5,18 @@ import java.util.List;
 public class PanelArbol extends JPanel {
     private ArbolBinario arbol;
     private List<Integer> recorrido;
+    protected int indiceRecorrido;
 
     public PanelArbol(ArbolBinario arbol) {
         this.arbol = arbol;
-        setBackground(Color.WHITE);
+        this.recorrido = null;
+        this.indiceRecorrido = 0;
+        setBackground(Color.GRAY);
     }
 
     public void setRecorrido(List<Integer> recorrido) {
         this.recorrido = recorrido;
+        this.indiceRecorrido = 0;
         repaint();
     }
 
@@ -27,9 +31,9 @@ public class PanelArbol extends JPanel {
     private void dibujarArbol(Graphics g, Nodo nodo, int x, int y, int xOffset, int yOffset) {
         if (nodo == null) return;
 
-        boolean highlighted = recorrido != null && recorrido.contains(nodo.valor);
+        boolean highlighted = recorrido != null && indiceRecorrido < recorrido.size() && recorrido.get(indiceRecorrido) == nodo.valor;
         if (highlighted) {
-            g.setColor(Color.BLACK);
+            g.setColor(Color.RED);
         } else {
             g.setColor(Color.BLACK);
         }
@@ -49,4 +53,12 @@ public class PanelArbol extends JPanel {
             dibujarArbol(g, nodo.derecho, x + xOffset, y + yOffset, xOffset / 2, yOffset);
         }
     }
+
+    public void avanzarRecorrido() {
+        if (recorrido != null && indiceRecorrido < recorrido.size()) {
+            indiceRecorrido++;
+            repaint();
+        }
+    }
 }
+
